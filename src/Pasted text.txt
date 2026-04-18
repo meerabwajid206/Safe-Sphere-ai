@@ -1,0 +1,1153 @@
+import { useState } from "react";
+
+/* ============================================================
+   SAFESPHERE AI — COMPLETE FULL WEBSITE
+   Pages: Home, Login, Register, Dashboard, Submit Report,
+          Track Complaint, Admin Panel
+   Theme: Dark Navy #020617 + Purple/Blue gradient (matching original)
+   Font: Syne (headings) + DM Sans (body)
+   ============================================================ */
+
+// ─── GLOBAL STYLES (injected once) ───────────────────────────
+const GlobalStyle = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --bg:        #020617;
+      --bg2:       #050d1f;
+      --bg3:       #0a0f2e;
+      --sky:       #38bdf8;
+      --violet:    #9333ea;
+      --violet2:   #a855f7;
+      --pink:      #ec4899;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --muted2:    #94a3b8;
+      --border:    rgba(255,255,255,0.08);
+      --border2:   rgba(255,255,255,0.14);
+      --card:      rgba(255,255,255,0.04);
+      --card2:     rgba(255,255,255,0.07);
+      --grad:      linear-gradient(135deg,#9333ea,#ec4899);
+      --grad2:     linear-gradient(135deg,#38bdf8,#9333ea);
+      --shadow:    0 8px 32px rgba(147,51,234,0.25);
+    }
+
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-track{background:#020617;} ::-webkit-scrollbar-thumb{background:rgba(147,51,234,0.4);border-radius:3px;}
+
+    /* ANIMATED BACKGROUND */
+    .bg-wrap { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+    .bg-wrap::before {
+      content:'';position:absolute;inset:0;
+      background:
+        radial-gradient(ellipse 70% 60% at 20% 20%, rgba(56,189,248,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 70% at 80% 80%, rgba(147,51,234,0.22) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(236,72,153,0.10) 0%, transparent 60%),
+        linear-gradient(160deg, #020617 0%, #050d1f 40%, #0a0f2e 70%, #020617 100%);
+    }
+    .bg-orb { position:absolute; border-radius:50%; filter:blur(90px); animation:orbFloat 15s ease-in-out infinite alternate; }
+    .orb-a { width:700px;height:700px;top:-200px;left:-200px;background:rgba(56,189,248,0.12);animation-delay:0s; }
+    .orb-b { width:600px;height:600px;bottom:-150px;right:-150px;background:rgba(147,51,234,0.15);animation-delay:-5s; }
+    .orb-c { width:400px;height:400px;top:40%;left:35%;background:rgba(236,72,153,0.08);animation-delay:-10s; }
+    @keyframes orbFloat { 0%{transform:translate(0,0) scale(1);} 100%{transform:translate(60px,80px) scale(1.15);} }
+
+    .page-wrap { position:relative; z-index:2; min-height:100vh; }
+
+    /* NAV */
+    .nav {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:18px 48px; border-bottom:1px solid var(--border);
+      backdrop-filter:blur(20px); background:rgba(2,6,23,0.75);
+      position:sticky; top:0; z-index:100;
+    }
+    .nav-logo { display:flex; align-items:center; gap:12px; cursor:pointer; }
+    .nav-logo-text { font-family:'Syne',sans-serif; font-weight:800; font-size:19px;
+      background:var(--grad2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .nav-links { display:flex; gap:8px; list-style:none; }
+    .nav-links button { background:none; border:none; color:var(--muted2); font-size:14px;
+      font-family:'DM Sans',sans-serif; cursor:pointer; padding:8px 16px; border-radius:8px;
+      transition:all 0.2s; }
+    .nav-links button:hover, .nav-links button.active { color:var(--text); background:var(--card2); }
+    .nav-right { display:flex; gap:10px; }
+    .btn-ghost { background:none; border:1px solid var(--border2); color:var(--text);
+      padding:9px 20px; border-radius:8px; font-size:14px; font-family:'DM Sans',sans-serif;
+      cursor:pointer; transition:all 0.2s; }
+    .btn-ghost:hover { border-color:rgba(147,51,234,0.5); background:rgba(147,51,234,0.08); }
+    .btn-primary { background:var(--grad); border:none; color:white;
+      padding:10px 22px; border-radius:8px; font-size:14px; font-family:'DM Sans',sans-serif;
+      cursor:pointer; font-weight:600; box-shadow:0 4px 20px rgba(147,51,234,0.4);
+      transition:all 0.2s; }
+    .btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 28px rgba(147,51,234,0.55); }
+
+    /* LOGO SVG SHIELD */
+    .shield-logo { flex-shrink:0; }
+
+    /* HERO */
+    .hero { text-align:center; padding:110px 48px 80px; max-width:960px; margin:0 auto; }
+    .hero-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(147,51,234,0.12); border:1px solid rgba(147,51,234,0.3);
+      color:#c084fc; padding:6px 18px; border-radius:99px;
+      font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:28px;
+    }
+    .badge-pulse { width:7px;height:7px;border-radius:50%;background:#a855f7; animation:blink 2s ease-in-out infinite; }
+    @keyframes blink{ 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(168,85,247,0.4);} 50%{opacity:0.5;box-shadow:0 0 0 6px rgba(168,85,247,0);} }
+    .hero h1 { font-family:'Syne',sans-serif; font-size:clamp(40px,6.5vw,76px); font-weight:800;
+      line-height:1.04; letter-spacing:-0.03em; margin-bottom:24px;
+      text-shadow:0 0 60px rgba(147,51,234,0.3); }
+    .hero h1 .grad { background:linear-gradient(135deg,var(--sky) 0%,var(--violet2) 50%,var(--pink) 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-sub { font-size:18px; color:var(--muted2); line-height:1.75; max-width:600px; margin:0 auto 42px; }
+    .hero-btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+    .btn-xl { padding:15px 36px; border-radius:12px; font-size:16px;
+      font-family:'DM Sans',sans-serif; cursor:pointer; font-weight:600; transition:all 0.2s; }
+    .btn-xl.primary { background:var(--grad); border:none; color:white; box-shadow:var(--shadow); }
+    .btn-xl.primary:hover { transform:translateY(-3px); box-shadow:0 16px 48px rgba(147,51,234,0.5); }
+    .btn-xl.outline { background:none; border:1px solid var(--border2); color:var(--text); }
+    .btn-xl.outline:hover { border-color:rgba(255,255,255,0.3); background:var(--card2); }
+
+    /* STATS */
+    .stats-row { display:flex; justify-content:center; gap:0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); flex-wrap:wrap; }
+    .stat-item { text-align:center; padding:44px 60px; border-right:1px solid var(--border); }
+    .stat-item:last-child { border-right:none; }
+    .stat-num { font-family:'Syne',sans-serif; font-size:36px; font-weight:800;
+      background:var(--grad2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .stat-label { font-size:13px; color:var(--muted); margin-top:5px; }
+
+    /* SECTION */
+    .section { padding:90px 48px; max-width:1200px; margin:0 auto; }
+    .section-tag { font-size:11px; text-transform:uppercase; letter-spacing:0.12em; color:var(--violet2); font-weight:700; margin-bottom:10px; }
+    .section-h { font-family:'Syne',sans-serif; font-size:clamp(26px,4vw,44px); font-weight:800; letter-spacing:-0.025em; margin-bottom:14px; }
+    .section-p { color:var(--muted2); font-size:16px; line-height:1.75; max-width:520px; }
+
+    /* FEATURE CARDS */
+    .feat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; margin-top:50px; }
+    .feat-card {
+      background:var(--card); border:1px solid var(--border); border-radius:18px;
+      padding:30px; transition:all 0.3s; cursor:default; position:relative; overflow:hidden;
+    }
+    .feat-card::before { content:''; position:absolute; inset:0; background:var(--grad);
+      opacity:0; transition:opacity 0.3s; border-radius:18px; }
+    .feat-card:hover { border-color:rgba(147,51,234,0.35); transform:translateY(-5px); box-shadow:0 20px 50px rgba(147,51,234,0.2); }
+    .feat-card:hover::before { opacity:0.04; }
+    .feat-icon { width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;font-size:22px;position:relative;z-index:1; }
+    .feat-card h3 { font-family:'Syne',sans-serif; font-size:17px; font-weight:700; margin-bottom:10px; position:relative;z-index:1; }
+    .feat-card p { color:var(--muted2); font-size:14px; line-height:1.65; position:relative;z-index:1; }
+
+    /* STEPS */
+    .steps-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0; margin-top:50px; position:relative; }
+    .steps-grid::before { content:''; position:absolute; top:36px; left:12.5%; right:12.5%; height:1px; background:linear-gradient(90deg,transparent,rgba(147,51,234,0.4),transparent); }
+    .step-box { text-align:center; padding:0 24px; }
+    .step-num-wrap { width:72px;height:72px;border-radius:50%;border:1px solid rgba(147,51,234,0.3);
+      background:rgba(147,51,234,0.08); display:flex;align-items:center;justify-content:center; margin:0 auto 20px; position:relative;z-index:1; }
+    .step-num-inner { font-family:'Syne',sans-serif; font-size:22px; font-weight:800;
+      background:var(--grad2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .step-box h4 { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; margin-bottom:8px; }
+    .step-box p { color:var(--muted2); font-size:13px; line-height:1.65; }
+
+    /* FORMS */
+    .auth-page { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+    .auth-card { background:rgba(10,15,46,0.9); border:1px solid var(--border2); border-radius:24px;
+      padding:44px; width:100%; max-width:460px; backdrop-filter:blur(24px); }
+    .auth-card h2 { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; margin-bottom:6px; }
+    .auth-card .sub { color:var(--muted2); font-size:14px; margin-bottom:32px; }
+    .form-group { margin-bottom:20px; }
+    .form-label { display:block; font-size:13px; font-weight:600; color:var(--muted2); margin-bottom:8px; letter-spacing:0.02em; }
+    .form-input {
+      width:100%; background:rgba(255,255,255,0.05); border:1px solid var(--border2);
+      border-radius:10px; padding:12px 16px; color:var(--text); font-size:14px;
+      font-family:'DM Sans',sans-serif; outline:none; transition:all 0.2s;
+    }
+    .form-input:focus { border-color:rgba(147,51,234,0.6); background:rgba(147,51,234,0.06); box-shadow:0 0 0 3px rgba(147,51,234,0.12); }
+    .form-input::placeholder { color:var(--muted); }
+    select.form-input option { background:#0a0f2e; }
+    textarea.form-input { resize:vertical; min-height:100px; }
+    .form-btn { width:100%; padding:14px; background:var(--grad); border:none; border-radius:10px;
+      color:white; font-size:15px; font-family:'DM Sans',sans-serif; font-weight:600;
+      cursor:pointer; box-shadow:var(--shadow); transition:all 0.2s; margin-top:4px; }
+    .form-btn:hover { transform:translateY(-2px); box-shadow:0 12px 36px rgba(147,51,234,0.5); }
+    .form-divider { text-align:center; color:var(--muted); font-size:13px; margin:20px 0; position:relative; }
+    .form-divider::before,.form-divider::after { content:''; position:absolute; top:50%; width:40%; height:1px; background:var(--border); }
+    .form-divider::before{left:0;} .form-divider::after{right:0;}
+    .link-btn { background:none; border:none; color:var(--violet2); font-size:14px; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:500; text-decoration:underline; }
+    .role-toggle { display:flex; gap:8px; margin-bottom:24px; }
+    .role-btn { flex:1; padding:10px; border-radius:8px; border:1px solid var(--border2);
+      background:none; color:var(--muted2); font-size:13px; font-family:'DM Sans',sans-serif;
+      cursor:pointer; transition:all 0.2s; font-weight:500; }
+    .role-btn.active { background:rgba(147,51,234,0.15); border-color:rgba(147,51,234,0.5); color:var(--text); }
+
+    /* DASHBOARD */
+    .dash-layout { display:flex; min-height:calc(100vh - 65px); }
+    .sidebar { width:240px; flex-shrink:0; border-right:1px solid var(--border); padding:24px 16px;
+      background:rgba(5,13,31,0.5); backdrop-filter:blur(12px); }
+    .sidebar-item { display:flex; align-items:center; gap:12px; padding:10px 14px;
+      border-radius:10px; cursor:pointer; color:var(--muted2); font-size:14px; font-weight:500;
+      transition:all 0.2s; margin-bottom:4px; border:none; background:none; width:100%; font-family:'DM Sans',sans-serif; }
+    .sidebar-item:hover { color:var(--text); background:var(--card2); }
+    .sidebar-item.active { color:var(--text); background:rgba(147,51,234,0.12); border:1px solid rgba(147,51,234,0.2); }
+    .sidebar-icon { width:18px; text-align:center; font-size:16px; }
+    .dash-main { flex:1; padding:36px 40px; overflow-y:auto; }
+    .dash-title { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; margin-bottom:6px; }
+    .dash-sub { color:var(--muted2); font-size:14px; margin-bottom:36px; }
+
+    /* STAT CARDS */
+    .stat-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:32px; }
+    .stat-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:22px; }
+    .stat-card-label { font-size:12px; color:var(--muted); font-weight:600; letter-spacing:0.04em; text-transform:uppercase; margin-bottom:10px; }
+    .stat-card-num { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; margin-bottom:4px; }
+    .stat-card-change { font-size:12px; }
+    .up { color:#4ade80; } .down { color:#f87171; } .neutral { color:var(--muted2); }
+
+    /* TABLE */
+    .table-wrap { background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+    .table-head { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+    .table-head h3 { font-family:'Syne',sans-serif; font-size:17px; font-weight:700; }
+    table { width:100%; border-collapse:collapse; }
+    th { text-align:left; padding:14px 20px; font-size:12px; color:var(--muted); font-weight:600; letter-spacing:0.05em; text-transform:uppercase; border-bottom:1px solid var(--border); }
+    td { padding:16px 20px; font-size:14px; border-bottom:1px solid rgba(255,255,255,0.04); }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(255,255,255,0.02); }
+
+    /* BADGES */
+    .badge { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:99px; font-size:12px; font-weight:600; }
+    .badge-pending  { background:rgba(251,146,60,0.15); color:#fb923c; }
+    .badge-review   { background:rgba(56,189,248,0.15); color:#38bdf8; }
+    .badge-resolved { background:rgba(74,222,128,0.15); color:#4ade80; }
+    .badge-high     { background:rgba(248,113,113,0.15); color:#f87171; }
+    .badge-medium   { background:rgba(251,146,60,0.15); color:#fb923c; }
+    .badge-low      { background:rgba(74,222,128,0.15); color:#4ade80; }
+
+    /* REPORT FORM */
+    .report-page { max-width:760px; margin:0 auto; padding:50px 48px; }
+    .report-page h2 { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; margin-bottom:8px; }
+    .report-page .sub { color:var(--muted2); font-size:15px; margin-bottom:40px; }
+    .form-card { background:rgba(10,15,46,0.8); border:1px solid var(--border2); border-radius:20px; padding:36px; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .form-hint { font-size:12px; color:var(--muted); margin-top:6px; }
+    .upload-zone { border:2px dashed rgba(147,51,234,0.3); border-radius:12px; padding:32px;
+      text-align:center; cursor:pointer; transition:all 0.2s; background:rgba(147,51,234,0.04); }
+    .upload-zone:hover { border-color:rgba(147,51,234,0.6); background:rgba(147,51,234,0.08); }
+    .upload-icon { font-size:32px; margin-bottom:10px; }
+    .upload-text { font-size:14px; color:var(--muted2); }
+    .upload-text span { color:var(--violet2); font-weight:600; }
+    .anon-toggle { display:flex; align-items:center; gap:14px; padding:16px 20px;
+      background:rgba(147,51,234,0.08); border:1px solid rgba(147,51,234,0.2); border-radius:12px; margin-bottom:20px; }
+    .toggle { width:44px;height:24px;border-radius:12px;border:none;cursor:pointer;
+      transition:background 0.2s;position:relative;flex-shrink:0; }
+    .toggle.on { background:var(--grad); }
+    .toggle.off { background:rgba(255,255,255,0.1); }
+    .toggle-dot { width:18px;height:18px;background:white;border-radius:50%;position:absolute;top:3px;transition:left 0.2s; }
+    .toggle.on .toggle-dot { left:23px; }
+    .toggle.off .toggle-dot { left:3px; }
+
+    /* TRACK PAGE */
+    .track-page { max-width:700px; margin:0 auto; padding:50px 48px; }
+    .complaint-card { background:rgba(10,15,46,0.8); border:1px solid var(--border2); border-radius:20px; padding:32px; margin-top:28px; }
+    .complaint-id { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; color:var(--violet2); margin-bottom:6px; }
+    .progress-steps { display:flex; align-items:center; margin:28px 0; }
+    .prog-step { display:flex; flex-direction:column; align-items:center; flex:1; }
+    .prog-dot { width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;z-index:1; }
+    .prog-dot.done { background:var(--grad); color:white; }
+    .prog-dot.active { background:rgba(147,51,234,0.2); border:2px solid var(--violet2); color:var(--violet2); }
+    .prog-dot.todo { background:rgba(255,255,255,0.05); border:1px solid var(--border2); color:var(--muted); }
+    .prog-line { flex:1; height:2px; background:var(--border2); margin:0 -1px; margin-bottom:30px; }
+    .prog-line.done { background:var(--grad); }
+    .prog-label { font-size:11px; color:var(--muted2); margin-top:8px; text-align:center; font-weight:500; }
+
+    /* ADMIN */
+    .admin-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:28px; }
+    .mini-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; }
+    .chart-bar-wrap { display:flex; flex-direction:column; gap:10px; margin-top:16px; }
+    .chart-bar-row { display:flex; align-items:center; gap:12px; }
+    .chart-bar-label { font-size:13px; color:var(--muted2); width:90px; flex-shrink:0; }
+    .chart-bar-bg { flex:1; height:8px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden; }
+    .chart-bar-fill { height:8px; border-radius:4px; }
+    .chart-bar-val { font-size:12px; color:var(--muted2); width:32px; text-align:right; }
+    .action-btn { padding:8px 16px; border-radius:8px; border:1px solid var(--border2); background:none;
+      color:var(--text); font-size:12px; font-family:'DM Sans',sans-serif; cursor:pointer;
+      font-weight:500; transition:all 0.2s; }
+    .action-btn:hover { background:var(--card2); }
+    .action-btn.danger { border-color:rgba(248,113,113,0.3); color:#f87171; }
+    .action-btn.danger:hover { background:rgba(248,113,113,0.08); }
+    .action-btn.success { border-color:rgba(74,222,128,0.3); color:#4ade80; }
+    .action-btn.success:hover { background:rgba(74,222,128,0.08); }
+
+    /* ALERT */
+    .alert { padding:14px 20px; border-radius:10px; font-size:14px; margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+    .alert-success { background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.25); color:#4ade80; }
+    .alert-error { background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.25); color:#f87171; }
+
+    /* FOOTER */
+    .footer { border-top:1px solid var(--border); padding:28px 48px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+    .footer-copy { font-size:13px; color:var(--muted); }
+    .footer-links { display:flex; gap:20px; }
+    .footer-links span { font-size:13px; color:var(--muted); cursor:pointer; transition:color 0.2s; }
+    .footer-links span:hover { color:var(--text); }
+
+    @media(max-width:768px){
+      .nav{padding:14px 20px;} .hero{padding:60px 20px 60px;} .section{padding:60px 20px;}
+      .stat-item{padding:28px 20px;} .steps-grid{grid-template-columns:1fr 1fr;gap:24px;}
+      .steps-grid::before{display:none;} .form-row{grid-template-columns:1fr;}
+      .admin-grid{grid-template-columns:1fr;} .dash-layout{flex-direction:column;}
+      .sidebar{width:100%;} .dash-main{padding:24px 16px;} .report-page,.track-page{padding:30px 20px;}
+      .footer{padding:20px;} .nav-links{display:none;}
+    }
+  `}</style>
+);
+
+// ─── LOGO COMPONENT ───────────────────────────────────────────
+const Logo = ({ size = 40, onClick }) => (
+  <div className="nav-logo" onClick={onClick}>
+    <svg width={size} height={size} viewBox="0 0 100 100" className="shield-logo">
+      <defs>
+        <linearGradient id="lgo" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#38bdf8" />
+          <stop offset="100%" stopColor="#9333ea" />
+        </linearGradient>
+      </defs>
+      <circle cx="50" cy="50" r="46" stroke="url(#lgo)" strokeWidth="2.5" fill="none" />
+      <path d="M50 22 L72 33 L68 60 L50 78 L32 60 L28 33 Z"
+        stroke="url(#lgo)" strokeWidth="2.5" fill="rgba(56,189,248,0.06)" />
+      <circle cx="50" cy="50" r="5" fill="url(#lgo)" />
+      <line x1="50" y1="37" x2="50" y2="45" stroke="url(#lgo)" strokeWidth="2" strokeLinecap="round" />
+      <line x1="43" y1="48" x2="57" y2="48" stroke="url(#lgo)" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+    <span className="nav-logo-text">SafeSphere AI</span>
+  </div>
+);
+
+// ─── NAVBAR ───────────────────────────────────────────────────
+const Navbar = ({ page, setPage, user, setUser }) => {
+  const navItems = user
+    ? user.role === "admin"
+      ? [["Dashboard", "admin"], ["Reports", "adminreports"], ["Analytics", "analytics"]]
+      : [["Home", "home"], ["Dashboard", "dashboard"], ["Submit Report", "report"], ["Track", "track"]]
+    : [["Home", "home"]];
+
+  return (
+    <nav className="nav">
+      <Logo onClick={() => setPage("home")} />
+      <ul className="nav-links">
+        {navItems.map(([label, p]) => (
+          <li key={p}>
+            <button className={page === p ? "active" : ""} onClick={() => setPage(p)}>
+              {label}
+            </button>
+          </li>
+        ))}
+      </ul>
+      <div className="nav-right">
+        {user ? (
+          <>
+            <span style={{ fontSize: 13, color: "var(--muted2)", marginRight: 4 }}>
+              👤 {user.name}
+            </span>
+            <button className="btn-ghost" onClick={() => { setUser(null); setPage("home"); }}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="btn-ghost" onClick={() => setPage("login")}>Log in</button>
+            <button className="btn-primary" onClick={() => setPage("register")}>Sign Up Free</button>
+          </>
+        )}
+      </div>
+    </nav>
+  );
+};
+
+// ─── PAGE: HOME ───────────────────────────────────────────────
+const HomePage = ({ setPage }) => (
+  <div>
+    {/* HERO */}
+    <div className="hero">
+      <div className="hero-badge">
+        <span className="badge-pulse" />
+        AI-Powered Safety Platform
+      </div>
+      <h1>
+        Intelligent <span className="grad">Cyberbullying</span>
+        <br />Detection & Prevention
+      </h1>
+      <p className="hero-sub">
+        SafeSphere AI uses advanced NLP, OCR, and machine learning to detect, analyze,
+        and prevent online harassment in real-time — protecting students and communities.
+      </p>
+      <div className="hero-btns">
+        <button className="btn-xl primary" onClick={() => setPage("register")}>
+          Get Protected Free →
+        </button>
+        <button className="btn-xl outline" onClick={() => setPage("login")}>
+          View Dashboard
+        </button>
+      </div>
+    </div>
+
+    {/* STATS */}
+    <div className="stats-row">
+      {[
+        ["98.7%", "Detection Accuracy"],
+        ["< 1.2s", "Response Time"],
+        ["18", "Core Entities"],
+        ["100%", "Anonymous Reporting"],
+        ["20+", "Languages Supported"],
+      ].map(([n, l]) => (
+        <div className="stat-item" key={l}>
+          <div className="stat-num">{n}</div>
+          <div className="stat-label">{l}</div>
+        </div>
+      ))}
+    </div>
+
+    {/* FEATURES */}
+    <div className="section">
+      <div className="section-tag">Core Features</div>
+      <div className="section-h">Everything you need to stay safe</div>
+      <p className="section-p">
+        A complete end-to-end safety ecosystem powered by advanced artificial intelligence.
+      </p>
+      <div className="feat-grid">
+        {[
+          ["🤖", "rgba(56,189,248,0.12)", "AI Toxicity Detection",
+            "NLP-powered analysis identifies harmful language, threats, and abuse in real-time with 98.7% accuracy across 20+ languages."],
+          ["🕵️", "rgba(147,51,234,0.12)", "Anonymous Reporting",
+            "Submit reports without revealing your identity. Every complaint gets a unique tracking ID for secure, confidential follow-up."],
+          ["⚡", "rgba(236,72,153,0.12)", "Real-Time Alerts",
+            "Instant notifications sent to administrators and guardians the moment harmful content is detected or reports are submitted."],
+          ["📊", "rgba(34,197,94,0.12)", "Safety Score System",
+            "Dynamic risk assessment assigns safety scores to each case, helping admins prioritize critical incidents first."],
+          ["🖼️", "rgba(251,146,60,0.12)", "Screenshot Evidence & OCR",
+            "Upload screenshots as evidence. OCR technology extracts and analyzes text from images automatically for deeper detection."],
+          ["🌍", "rgba(99,102,241,0.12)", "Multi-Language Support",
+            "Auto-translation and detection across 20+ languages ensures no harmful content slips through language barriers."],
+        ].map(([icon, bg, title, desc]) => (
+          <div className="feat-card" key={title}>
+            <div className="feat-icon" style={{ background: bg }}>{icon}</div>
+            <h3>{title}</h3>
+            <p>{desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* HOW IT WORKS */}
+    <div style={{ borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.015)" }}>
+      <div className="section">
+        <div className="section-tag">Process</div>
+        <div className="section-h">How SafeSphere Works</div>
+        <div className="steps-grid">
+          {[
+            ["01", "Submit Report", "User files an anonymous report with text, screenshots, or both via a secure encrypted form."],
+            ["02", "AI Analysis", "NLP + OCR engine analyzes content, detects language, and computes a toxicity score in under 1.2 seconds."],
+            ["03", "Alert & Track", "Admin is notified instantly. A unique complaint ID is issued. Reporter tracks status anonymously."],
+            ["04", "Action & Resolution", "Admin reviews, takes action, and logs the outcome in a permanent audit trail dashboard."],
+          ].map(([num, title, desc]) => (
+            <div className="step-box" key={num}>
+              <div className="step-num-wrap">
+                <span className="step-num-inner">{num}</span>
+              </div>
+              <h4>{title}</h4>
+              <p>{desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* ENTITIES */}
+    <div className="section">
+      <div className="section-tag">System Architecture</div>
+      <div className="section-h">18 Core Entities</div>
+      <p className="section-p">A production-grade data model powering every feature of the platform.</p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 36 }}>
+        {[
+          ["User", "#38bdf8"], ["User Profile", "#38bdf8"], ["Role", "#38bdf8"],
+          ["Report", "#a855f7"], ["Report Category", "#a855f7"], ["Evidence", "#a855f7"], ["Complaint Tracking", "#a855f7"],
+          ["AI Analysis", "#ec4899"], ["Language Detection", "#ec4899"], ["Translation", "#ec4899"], ["Emotion Analysis", "#ec4899"], ["Safety Score", "#ec4899"],
+          ["Notification", "#4ade80"], ["Admin", "#4ade80"], ["Admin Action", "#4ade80"], ["Feedback", "#4ade80"], ["Chat Support", "#4ade80"], ["Audit Log", "#4ade80"],
+        ].map(([name, color]) => (
+          <div key={name} style={{
+            background: "var(--card)", border: "1px solid var(--border)", borderRadius: 10,
+            padding: "10px 16px", display: "flex", alignItems: "center", gap: 10, fontSize: 13, transition: "border-color 0.2s",
+          }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
+            {name}
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* CTA */}
+    <div style={{ padding: "80px 48px", textAlign: "center" }}>
+      <div style={{
+        maxWidth: 680, margin: "0 auto", background: "linear-gradient(135deg,rgba(147,51,234,0.1),rgba(236,72,153,0.1))",
+        border: "1px solid rgba(147,51,234,0.25)", borderRadius: 24, padding: "60px 40px"
+      }}>
+        <div className="section-h" style={{ maxWidth: "100%" }}>Ready to make the internet safer?</div>
+        <p style={{ color: "var(--muted2)", marginBottom: 32, fontSize: 16 }}>
+          Join thousands of schools and communities using SafeSphere AI to protect their members from online harm.
+        </p>
+        <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
+          <button className="btn-xl primary" onClick={() => setPage("register")}>Start For Free</button>
+          <button className="btn-xl outline">Contact Our Team</button>
+        </div>
+      </div>
+    </div>
+
+    {/* FOOTER */}
+    <div className="footer">
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ fontFamily: "Syne,sans-serif", fontWeight: 800, fontSize: 16, background: "var(--grad2)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          SafeSphere AI
+        </span>
+        <span className="footer-copy">© 2024 All rights reserved.</span>
+      </div>
+      <div className="footer-links">
+        <span>Privacy Policy</span>
+        <span>Terms of Use</span>
+        <span>Support</span>
+        <span>GitHub</span>
+      </div>
+    </div>
+  </div>
+);
+
+// ─── PAGE: LOGIN ──────────────────────────────────────────────
+const LoginPage = ({ setPage, setUser }) => {
+  const [form, setForm] = useState({ email: "", password: "", role: "user" });
+  const [err, setErr] = useState("");
+
+  const handle = () => {
+    if (!form.email || !form.password) { setErr("Please fill all fields."); return; }
+    // Simulate login
+    setUser({ name: form.role === "admin" ? "Admin Maryam" : "Ali Hassan", email: form.email, role: form.role });
+    setPage(form.role === "admin" ? "admin" : "dashboard");
+  };
+
+  return (
+    <div className="auth-page">
+      <div className="auth-card">
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <Logo size={48} />
+        </div>
+        <h2>Welcome back</h2>
+        <p className="sub">Sign in to your SafeSphere AI account</p>
+        <div className="role-toggle">
+          <button className={`role-btn ${form.role === "user" ? "active" : ""}`} onClick={() => setForm({ ...form, role: "user" })}>👤 User</button>
+          <button className={`role-btn ${form.role === "admin" ? "active" : ""}`} onClick={() => setForm({ ...form, role: "admin" })}>🛡️ Admin</button>
+        </div>
+        {err && <div className="alert alert-error">⚠️ {err}</div>}
+        <div className="form-group">
+          <label className="form-label">Email Address</label>
+          <input className="form-input" type="email" placeholder="you@example.com"
+            value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Password</label>
+          <input className="form-input" type="password" placeholder="••••••••"
+            value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+        </div>
+        <div style={{ textAlign: "right", marginBottom: 16 }}>
+          <button className="link-btn" style={{ fontSize: 13 }}>Forgot password?</button>
+        </div>
+        <button className="form-btn" onClick={handle}>Sign In</button>
+        <div className="form-divider">or</div>
+        <p style={{ textAlign: "center", fontSize: 14, color: "var(--muted2)" }}>
+          Don't have an account?{" "}
+          <button className="link-btn" onClick={() => setPage("register")}>Create one free</button>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ─── PAGE: REGISTER ───────────────────────────────────────────
+const RegisterPage = ({ setPage, setUser }) => {
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "", role: "user" });
+  const [err, setErr] = useState("");
+
+  const handle = () => {
+    if (!form.name || !form.email || !form.password) { setErr("Please fill all fields."); return; }
+    if (form.password !== form.confirm) { setErr("Passwords do not match."); return; }
+    setUser({ name: form.name, email: form.email, role: form.role });
+    setPage(form.role === "admin" ? "admin" : "dashboard");
+  };
+
+  return (
+    <div className="auth-page">
+      <div className="auth-card">
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <Logo size={48} />
+        </div>
+        <h2>Create Account</h2>
+        <p className="sub">Join SafeSphere AI — free forever for basic use</p>
+        <div className="role-toggle">
+          <button className={`role-btn ${form.role === "user" ? "active" : ""}`} onClick={() => setForm({ ...form, role: "user" })}>👤 User</button>
+          <button className={`role-btn ${form.role === "admin" ? "active" : ""}`} onClick={() => setForm({ ...form, role: "admin" })}>🛡️ Admin</button>
+        </div>
+        {err && <div className="alert alert-error">⚠️ {err}</div>}
+        <div className="form-group">
+          <label className="form-label">Full Name</label>
+          <input className="form-input" placeholder="Maryam Khan"
+            value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Email Address</label>
+          <input className="form-input" type="email" placeholder="you@example.com"
+            value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input className="form-input" type="password" placeholder="Min. 8 chars"
+              value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Confirm Password</label>
+            <input className="form-input" type="password" placeholder="Repeat password"
+              value={form.confirm} onChange={e => setForm({ ...form, confirm: e.target.value })} />
+          </div>
+        </div>
+        <button className="form-btn" onClick={handle}>Create My Account</button>
+        <div className="form-divider">or</div>
+        <p style={{ textAlign: "center", fontSize: 14, color: "var(--muted2)" }}>
+          Already have an account?{" "}
+          <button className="link-btn" onClick={() => setPage("login")}>Sign in here</button>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ─── PAGE: USER DASHBOARD ─────────────────────────────────────
+const DashboardPage = ({ setPage, user }) => {
+  const [active, setActive] = useState("overview");
+
+  const reports = [
+    { id: "SS-2024-001", category: "Harassment", status: "resolved", risk: "high", date: "Apr 12" },
+    { id: "SS-2024-002", category: "Threats", status: "review", risk: "high", date: "Apr 14" },
+    { id: "SS-2024-003", category: "Hate Speech", status: "pending", risk: "medium", date: "Apr 16" },
+  ];
+
+  return (
+    <div className="dash-layout">
+      {/* SIDEBAR */}
+      <aside className="sidebar">
+        <p style={{ fontSize: 11, color: "var(--muted)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16, paddingLeft: 14 }}>Menu</p>
+        {[
+          ["📊", "Overview", "overview"],
+          ["📋", "My Reports", "reports"],
+          ["➕", "Submit Report", "report"],
+          ["🔍", "Track Complaint", "track"],
+          ["🔔", "Notifications", "notif"],
+          ["👤", "My Profile", "profile"],
+        ].map(([icon, label, key]) => (
+          <button key={key} className={`sidebar-item ${active === key ? "active" : ""}`}
+            onClick={() => { if (key === "report") setPage("report"); else if (key === "track") setPage("track"); else setActive(key); }}>
+            <span className="sidebar-icon">{icon}</span> {label}
+          </button>
+        ))}
+      </aside>
+
+      {/* MAIN */}
+      <main className="dash-main">
+        <div className="dash-title">Hello, {user?.name?.split(" ")[0]} 👋</div>
+        <div className="dash-sub">Here's your safety overview for April 2024</div>
+
+        <div className="stat-cards">
+          {[
+            ["Total Reports", "3", "+1 this week", "up"],
+            ["Resolved", "1", "33% rate", "neutral"],
+            ["Under Review", "1", "Active", "neutral"],
+            ["Safety Score", "72", "Good standing", "up"],
+          ].map(([label, num, change, dir]) => (
+            <div className="stat-card" key={label}>
+              <div className="stat-card-label">{label}</div>
+              <div className="stat-card-num" style={{ background: "var(--grad2)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{num}</div>
+              <div className={`stat-card-change ${dir}`}>{change}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="table-wrap">
+          <div className="table-head">
+            <h3>My Reports</h3>
+            <button className="btn-primary" style={{ padding: "8px 18px", fontSize: 13 }} onClick={() => setPage("report")}>
+              + New Report
+            </button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Complaint ID</th>
+                <th>Category</th>
+                <th>Risk Level</th>
+                <th>Status</th>
+                <th>Filed</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reports.map(r => (
+                <tr key={r.id}>
+                  <td style={{ fontFamily: "monospace", color: "var(--violet2)", fontWeight: 600 }}>{r.id}</td>
+                  <td>{r.category}</td>
+                  <td><span className={`badge badge-${r.risk}`}>{r.risk.toUpperCase()}</span></td>
+                  <td><span className={`badge badge-${r.status}`}>{r.status.charAt(0).toUpperCase() + r.status.slice(1)}</span></td>
+                  <td style={{ color: "var(--muted2)" }}>{r.date}</td>
+                  <td><button className="action-btn" onClick={() => setPage("track")}>Track →</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+// ─── PAGE: SUBMIT REPORT ──────────────────────────────────────
+const ReportPage = ({ setPage }) => {
+  const [form, setForm] = useState({ category: "", platform: "", content: "", language: "auto", anonymous: true });
+  const [submitted, setSubmitted] = useState(false);
+  const [complaintId] = useState("SS-2024-" + Math.floor(Math.random() * 900 + 100));
+
+  const handleSubmit = () => {
+    if (!form.category || !form.content) return;
+    setSubmitted(true);
+  };
+
+  if (submitted) return (
+    <div className="report-page">
+      <div style={{ textAlign: "center", padding: "60px 0" }}>
+        <div style={{ fontSize: 60, marginBottom: 20 }}>✅</div>
+        <h2 style={{ fontFamily: "Syne,sans-serif", fontSize: 32, fontWeight: 800, marginBottom: 10 }}>Report Submitted!</h2>
+        <p style={{ color: "var(--muted2)", marginBottom: 28 }}>Your complaint has been filed securely and is under review.</p>
+        <div style={{ background: "rgba(147,51,234,0.1)", border: "1px solid rgba(147,51,234,0.3)", borderRadius: 14, padding: "20px 32px", display: "inline-block", marginBottom: 32 }}>
+          <p style={{ fontSize: 13, color: "var(--muted2)", marginBottom: 6 }}>Your Complaint ID</p>
+          <p style={{ fontFamily: "Syne,sans-serif", fontSize: 26, fontWeight: 800, color: "var(--violet2)" }}>{complaintId}</p>
+          <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>Save this ID to track your complaint</p>
+        </div>
+        <div style={{ display: "flex", gap: 14, justifyContent: "center" }}>
+          <button className="btn-xl primary" onClick={() => setPage("track")}>Track Complaint →</button>
+          <button className="btn-xl outline" onClick={() => setPage("dashboard")}>Back to Dashboard</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="report-page">
+      <h2>Submit a Report</h2>
+      <p className="sub">Your identity is protected. All reports are encrypted and handled confidentially.</p>
+
+      <div className="form-card">
+        {/* Anonymous Toggle */}
+        <div className="anon-toggle">
+          <button className={`toggle ${form.anonymous ? "on" : "off"}`}
+            onClick={() => setForm({ ...form, anonymous: !form.anonymous })}>
+            <div className="toggle-dot" />
+          </button>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 600 }}>
+              {form.anonymous ? "🕵️ Anonymous Mode — ON" : "👤 Identified Mode — ON"}
+            </p>
+            <p style={{ fontSize: 12, color: "var(--muted2)" }}>
+              {form.anonymous ? "Your identity will be fully hidden from admins." : "Your name will be visible to the reviewing admin."}
+            </p>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Incident Category *</label>
+            <select className="form-input" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
+              <option value="">Select category...</option>
+              <option>Harassment</option>
+              <option>Cyberbullying</option>
+              <option>Threats & Intimidation</option>
+              <option>Hate Speech</option>
+              <option>Impersonation</option>
+              <option>Sexual Harassment</option>
+              <option>Doxxing</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Platform / Location</label>
+            <select className="form-input" value={form.platform} onChange={e => setForm({ ...form, platform: e.target.value })}>
+              <option value="">Where did this occur?</option>
+              <option>Instagram</option>
+              <option>TikTok</option>
+              <option>WhatsApp</option>
+              <option>Facebook</option>
+              <option>Snapchat</option>
+              <option>Twitter/X</option>
+              <option>School Platform</option>
+              <option>Gaming / Discord</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Describe the Incident *</label>
+          <textarea className="form-input" placeholder="Describe what happened in detail. Include dates, times, and what was said or done. The more detail you provide, the better our AI can analyze it..."
+            style={{ minHeight: 140 }} value={form.content}
+            onChange={e => setForm({ ...form, content: e.target.value })} />
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+            <p className="form-hint">Minimum 50 characters. No personal info needed.</p>
+            <p className="form-hint">{form.content.length} chars</p>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Bully's Username / Name</label>
+            <input className="form-input" placeholder="@username or name (optional)" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Language Detection</label>
+            <select className="form-input" value={form.language} onChange={e => setForm({ ...form, language: e.target.value })}>
+              <option value="auto">Auto-Detect (Recommended)</option>
+              <option>English</option>
+              <option>Urdu</option>
+              <option>Arabic</option>
+              <option>Hindi</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Upload Evidence (Screenshots)</label>
+          <div className="upload-zone">
+            <div className="upload-icon">📎</div>
+            <p className="upload-text"><span>Click to upload</span> or drag & drop</p>
+            <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 6 }}>PNG, JPG, PDF up to 10MB · OCR will auto-extract text</p>
+          </div>
+        </div>
+
+        {/* AI Preview */}
+        {form.content.length > 20 && (
+          <div style={{ background: "rgba(147,51,234,0.06)", border: "1px solid rgba(147,51,234,0.2)", borderRadius: 12, padding: 18, marginBottom: 20 }}>
+            <p style={{ fontSize: 12, color: "var(--violet2)", fontWeight: 700, marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.06em" }}>🤖 AI Pre-Analysis</p>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              {[["Toxicity", "Analyzing..."], ["Severity", "Medium"], ["Language", "English"]].map(([k, v]) => (
+                <div key={k} style={{ background: "rgba(255,255,255,0.05)", borderRadius: 8, padding: "8px 14px" }}>
+                  <p style={{ fontSize: 11, color: "var(--muted)", marginBottom: 3 }}>{k}</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{v}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button className="form-btn" onClick={handleSubmit}
+          disabled={!form.category || !form.content}
+          style={{ opacity: (!form.category || !form.content) ? 0.5 : 1 }}>
+          🛡️ Submit Report Securely
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ─── PAGE: TRACK COMPLAINT ────────────────────────────────────
+const TrackPage = () => {
+  const [id, setId] = useState("");
+  const [result, setResult] = useState(null);
+
+  const demoData = {
+    "SS-2024-001": { status: "resolved", category: "Harassment", risk: "high", filed: "Apr 12, 2024", updated: "Apr 15, 2024", stage: 3, adminNote: "Case reviewed and resolved. Action taken against the reported user. Report archived." },
+    "SS-2024-002": { status: "review", category: "Threats", risk: "high", filed: "Apr 14, 2024", updated: "Apr 16, 2024", stage: 2, adminNote: "Case is under active review by our safety team. You'll be notified within 48 hours." },
+    "SS-2024-003": { status: "pending", category: "Hate Speech", risk: "medium", filed: "Apr 16, 2024", updated: "Apr 16, 2024", stage: 1, adminNote: "Your report has been received and is queued for review." },
+  };
+
+  const search = () => {
+    const found = demoData[id.trim().toUpperCase()];
+    setResult(found || "not_found");
+  };
+
+  const stages = ["Submitted", "Under Review", "Action Taken", "Resolved"];
+
+  return (
+    <div className="track-page">
+      <h2 style={{ fontFamily: "Syne,sans-serif", fontSize: 32, fontWeight: 800, marginBottom: 8 }}>Track Your Complaint</h2>
+      <p style={{ color: "var(--muted2)", marginBottom: 36, fontSize: 15 }}>
+        Enter your complaint ID to see the real-time status of your report.
+      </p>
+      <div className="form-card">
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label className="form-label">Complaint ID</label>
+          <div style={{ display: "flex", gap: 12 }}>
+            <input className="form-input" style={{ flex: 1, fontFamily: "monospace", fontSize: 16 }}
+              placeholder="SS-2024-001" value={id} onChange={e => setId(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && search()} />
+            <button className="btn-primary" style={{ padding: "12px 24px", whiteSpace: "nowrap" }} onClick={search}>
+              Search →
+            </button>
+          </div>
+          <p className="form-hint" style={{ marginTop: 8 }}>Try: SS-2024-001, SS-2024-002, or SS-2024-003</p>
+        </div>
+      </div>
+
+      {result === "not_found" && (
+        <div className="alert alert-error" style={{ marginTop: 20 }}>
+          ❌ No complaint found with that ID. Please check and try again.
+        </div>
+      )}
+
+      {result && result !== "not_found" && (
+        <div className="complaint-card">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+            <div>
+              <div className="complaint-id">{id.toUpperCase()}</div>
+              <p style={{ fontSize: 14, color: "var(--muted2)" }}>{result.category} — Filed {result.filed}</p>
+            </div>
+            <span className={`badge badge-${result.status}`} style={{ fontSize: 14, padding: "6px 16px" }}>
+              {result.status.charAt(0).toUpperCase() + result.status.slice(1)}
+            </span>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="progress-steps">
+            {stages.map((s, i) => (
+              <div key={s} style={{ display: "flex", alignItems: "center", flex: 1 }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+                  <div className={`prog-dot ${i < result.stage ? "done" : i === result.stage ? "active" : "todo"}`}>
+                    {i < result.stage ? "✓" : i + 1}
+                  </div>
+                  <p style={{ fontSize: 11, color: i <= result.stage ? "var(--muted2)" : "var(--muted)", marginTop: 8, textAlign: "center", fontWeight: i === result.stage ? 600 : 400 }}>{s}</p>
+                </div>
+                {i < stages.length - 1 && (
+                  <div style={{ flex: 1, height: 2, background: i < result.stage ? "linear-gradient(90deg,#9333ea,#ec4899)" : "var(--border2)", marginBottom: 30 }} />
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+            {[
+              ["Risk Level", <span className={`badge badge-${result.risk}`}>{result.risk.toUpperCase()}</span>],
+              ["Last Updated", result.updated],
+              ["Category", result.category],
+              ["Platform", "Under Investigation"],
+            ].map(([label, val]) => (
+              <div key={label} style={{ background: "var(--card)", borderRadius: 10, padding: "14px 16px" }}>
+                <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 5 }}>{label}</p>
+                <p style={{ fontSize: 14, fontWeight: 600 }}>{val}</p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ background: "rgba(147,51,234,0.06)", border: "1px solid rgba(147,51,234,0.15)", borderRadius: 12, padding: 16 }}>
+            <p style={{ fontSize: 12, color: "var(--violet2)", fontWeight: 700, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>Admin Note</p>
+            <p style={{ fontSize: 14, color: "var(--muted2)", lineHeight: 1.65 }}>{result.adminNote}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── PAGE: ADMIN PANEL ────────────────────────────────────────
+const AdminPage = ({ user }) => {
+  const [active, setSide] = useState("overview");
+  const [reports, setReports] = useState([
+    { id: "SS-2024-001", user: "Anonymous", category: "Harassment", risk: "high", status: "pending", date: "Apr 12", score: 22 },
+    { id: "SS-2024-002", user: "Ali Hassan", category: "Threats", risk: "high", status: "review", date: "Apr 14", score: 11 },
+    { id: "SS-2024-003", user: "Anonymous", category: "Hate Speech", risk: "medium", status: "pending", date: "Apr 15", score: 45 },
+    { id: "SS-2024-004", user: "Zara Malik", category: "Cyberbullying", risk: "medium", status: "resolved", date: "Apr 16", score: 38 },
+    { id: "SS-2024-005", user: "Anonymous", category: "Impersonation", risk: "low", status: "pending", date: "Apr 17", score: 62 },
+  ]);
+
+  const updateStatus = (id, status) => {
+    setReports(reports.map(r => r.id === id ? { ...r, status } : r));
+  };
+
+  return (
+    <div className="dash-layout">
+      <aside className="sidebar">
+        <p style={{ fontSize: 11, color: "var(--muted)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16, paddingLeft: 14 }}>Admin Panel</p>
+        {[
+          ["📊", "Overview", "overview"],
+          ["📋", "All Reports", "reports"],
+          ["🤖", "AI Analysis Log", "ai"],
+          ["👥", "User Management", "users"],
+          ["🔔", "Notifications", "notif"],
+          ["📜", "Audit Log", "audit"],
+          ["⚙️", "Settings", "settings"],
+        ].map(([icon, label, key]) => (
+          <button key={key} className={`sidebar-item ${active === key ? "active" : ""}`} onClick={() => setSide(key)}>
+            <span className="sidebar-icon">{icon}</span> {label}
+          </button>
+        ))}
+      </aside>
+
+      <main className="dash-main">
+        <div className="dash-title">Admin Dashboard 🛡️</div>
+        <div className="dash-sub">Logged in as {user?.name} — Full system access</div>
+
+        {/* STAT CARDS */}
+        <div className="stat-cards">
+          {[
+            ["Total Reports", reports.length, "All time", "neutral"],
+            ["Pending Review", reports.filter(r => r.status === "pending").length, "Needs attention", "down"],
+            ["Resolved", reports.filter(r => r.status === "resolved").length, "This week", "up"],
+            ["High Risk", reports.filter(r => r.risk === "high").length, "Priority", "down"],
+          ].map(([label, num, change, dir]) => (
+            <div className="stat-card" key={label}>
+              <div className="stat-card-label">{label}</div>
+              <div className="stat-card-num" style={{ background: "var(--grad2)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{num}</div>
+              <div className={`stat-card-change ${dir}`}>{change}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* MINI CHARTS */}
+        <div className="admin-grid" style={{ marginBottom: 28 }}>
+          <div className="mini-card">
+            <h3 style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Reports by Category</h3>
+            <p style={{ fontSize: 12, color: "var(--muted2)", marginBottom: 16 }}>This month</p>
+            <div className="chart-bar-wrap">
+              {[["Harassment", 70], ["Threats", 55], ["Hate Speech", 40], ["Cyberbullying", 35], ["Other", 20]].map(([label, pct]) => (
+                <div className="chart-bar-row" key={label}>
+                  <span className="chart-bar-label">{label}</span>
+                  <div className="chart-bar-bg">
+                    <div className="chart-bar-fill" style={{ width: `${pct}%`, background: "linear-gradient(90deg,#9333ea,#ec4899)" }} />
+                  </div>
+                  <span className="chart-bar-val">{pct}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mini-card">
+            <h3 style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, fontSize: 16, marginBottom: 4 }}>AI Safety Scores</h3>
+            <p style={{ fontSize: 12, color: "var(--muted2)", marginBottom: 16 }}>Lower = higher risk</p>
+            <div className="chart-bar-wrap">
+              {reports.slice(0, 5).map(r => (
+                <div className="chart-bar-row" key={r.id}>
+                  <span className="chart-bar-label" style={{ fontSize: 12 }}>{r.id}</span>
+                  <div className="chart-bar-bg">
+                    <div className="chart-bar-fill" style={{
+                      width: `${r.score}%`,
+                      background: r.score < 30 ? "linear-gradient(90deg,#ef4444,#f87171)" : r.score < 60 ? "linear-gradient(90deg,#f59e0b,#fbbf24)" : "linear-gradient(90deg,#22c55e,#4ade80)"
+                    }} />
+                  </div>
+                  <span className="chart-bar-val">{r.score}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* REPORTS TABLE */}
+        <div className="table-wrap">
+          <div className="table-head">
+            <h3>All Reports — Admin View</h3>
+            <div style={{ display: "flex", gap: 8 }}>
+              <select style={{ background: "var(--card)", border: "1px solid var(--border2)", color: "var(--text)", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontFamily: "DM Sans,sans-serif" }}>
+                <option>All Status</option>
+                <option>Pending</option>
+                <option>Under Review</option>
+                <option>Resolved</option>
+              </select>
+              <select style={{ background: "var(--card)", border: "1px solid var(--border2)", color: "var(--text)", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontFamily: "DM Sans,sans-serif" }}>
+                <option>All Risk</option>
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+              </select>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Reported By</th>
+                <th>Category</th>
+                <th>AI Score</th>
+                <th>Risk</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reports.map(r => (
+                <tr key={r.id}>
+                  <td style={{ fontFamily: "monospace", color: "var(--violet2)", fontWeight: 600 }}>{r.id}</td>
+                  <td style={{ color: "var(--muted2)" }}>{r.user}</td>
+                  <td>{r.category}</td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 48, height: 5, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
+                        <div style={{ width: `${r.score}%`, height: "100%", background: r.score < 30 ? "#f87171" : r.score < 60 ? "#fb923c" : "#4ade80", borderRadius: 3 }} />
+                      </div>
+                      <span style={{ fontSize: 13, color: "var(--muted2)" }}>{r.score}</span>
+                    </div>
+                  </td>
+                  <td><span className={`badge badge-${r.risk}`}>{r.risk.toUpperCase()}</span></td>
+                  <td><span className={`badge badge-${r.status}`}>{r.status.charAt(0).toUpperCase() + r.status.slice(1)}</span></td>
+                  <td style={{ color: "var(--muted2)" }}>{r.date}</td>
+                  <td>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {r.status !== "review" && (
+                        <button className="action-btn" onClick={() => updateStatus(r.id, "review")}>Review</button>
+                      )}
+                      {r.status !== "resolved" && (
+                        <button className="action-btn success" onClick={() => updateStatus(r.id, "resolved")}>Resolve</button>
+                      )}
+                      <button className="action-btn danger">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+// ─── ROOT APP ─────────────────────────────────────────────────
+export default function App() {
+  const [page, setPage] = useState("home");
+  const [user, setUser] = useState(null);
+
+  const renderPage = () => {
+    switch (page) {
+      case "home":       return <HomePage setPage={setPage} />;
+      case "login":      return <LoginPage setPage={setPage} setUser={setUser} />;
+      case "register":   return <RegisterPage setPage={setPage} setUser={setUser} />;
+      case "dashboard":  return <DashboardPage setPage={setPage} user={user} />;
+      case "report":     return <ReportPage setPage={setPage} />;
+      case "track":      return <TrackPage />;
+      case "admin":      return <AdminPage user={user} />;
+      default:           return <HomePage setPage={setPage} />;
+    }
+  };
+
+  return (
+    <>
+      <GlobalStyle />
+      <div className="bg-wrap">
+        <div className="bg-orb orb-a" />
+        <div className="bg-orb orb-b" />
+        <div className="bg-orb orb-c" />
+      </div>
+      <div className="page-wrap">
+        <Navbar page={page} setPage={setPage} user={user} setUser={setUser} />
+        {renderPage()}
+      </div>
+    </>
+  );
+}
