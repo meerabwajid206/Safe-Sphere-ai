@@ -68,7 +68,11 @@ const GlobalStyle = () => (
 
   backdrop-filter: blur(20px);
   background: transparent; /* 🔥 changed */
-
+.hero h1 .grad {
+  background: linear-gradient(135deg,var(--sky) 0%,var(--violet2) 50%,var(--pink) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
   position:sticky;
   top:0;
   z-index:100;
